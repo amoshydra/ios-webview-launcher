@@ -1,0 +1,13 @@
+# Generated from project.yml by XcodeGen — disposable, not checked in.
+*.xcodeproj/
+
+.DS_Store
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+.swiftpm/
+Packages/
+node_modules/

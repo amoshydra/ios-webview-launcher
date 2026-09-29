@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Required: WebKit reports env(safe-area-inset-*) as 0 without this. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Safe area probe</title>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 15px/1.4 -apple-system, system-ui, sans-serif;
+    background: #fff;
+    color: #111;
+    /* Paint each edge distinctly so override changes are visible at a glance. */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  .band { position: fixed; background: rgba(220, 40, 40, .28); z-index: 0; }
+  #bt { top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); }
+  #bb { bottom: 0; left: 0; right: 0; height: env(safe-area-inset-bottom, 0px); }
+  #bl { top: 0; bottom: 0; left: 0; width: env(safe-area-inset-left, 0px); }
+  #br { top: 0; bottom: 0; right: 0; width: env(safe-area-inset-right, 0px); }
+  #content { position: relative; z-index: 1; padding: 12px; }
+  h1 { font-size: 17px; margin: 0 0 10px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
+  th, td { border: 1px solid #ccc; padding: 5px 7px; text-align: left; font-size: 14px; }
+  th { background: #f3f3f3; }
+  td.v { font-family: ui-monospace, Menlo, monospace; font-weight: 600; }
+  .note { background: #fff8dc; border: 1px solid #e0c068; padding: 8px; border-radius: 6px; font-size: 13px; }
+  #probe { white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+           background: #111; color: #0f0; padding: 8px; border-radius: 6px; }
+  .mark { background: #ffe082; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="band" id="bt"></div><div class="band" id="bb"></div>
+<div class="band" id="bl"></div><div class="band" id="br"></div>
+
+<div id="content">
+  <h1>env(safe-area-inset-*) probe</h1>
+  <table>
+    <tr><th>edge</th><th>value</th></tr>
+    <tr><td>top</td>    <td class="v" id="t">-</td></tr>
+    <tr><td>right</td>  <td class="v" id="r">-</td></tr>
+    <tr><td>bottom</td> <td class="v" id="b">-</td></tr>
+    <tr><td>left</td>   <td class="v" id="l">-</td></tr>
+  </table>
+  <p class="note" id="verdict">reading…</p>
+  <p class="note">Injected JS result:</p>
+  <div id="probe">waiting for injection…</div>
+</div>
+
+<script>
+  // Read the real computed values by resolving env() through a probe element.
+  var probe = document.createElement('div');
+  probe.style.cssText =
+    'position:fixed;top:0;left:0;visibility:hidden;' +
+    'padding-top:env(safe-area-inset-top,0px);' +
+    'padding-right:env(safe-area-inset-right,0px);' +
+    'padding-bottom:env(safe-area-inset-bottom,0px);' +
+    'padding-left:env(safe-area-inset-left,0px);';
+  document.body.appendChild(probe);
+  var cs = getComputedStyle(probe);
+  var v = {
+    top: cs.paddingTop, right: cs.paddingRight,
+    bottom: cs.paddingBottom, left: cs.paddingLeft
+  };
+  document.getElementById('t').textContent = v.top;
+  document.getElementById('r').textContent = v.right;
+  document.getElementById('b').textContent = v.bottom;
+  document.getElementById('l').textContent = v.left;
+
+  // Window-level measure as a cross-check.
+  var s = document.getElementById('verdict');
+  var allZero = (v.top === '0px' && v.right === '0px' &&
+                 v.bottom === '0px' && v.left === '0px');
+  s.innerHTML = 'viewport-fit=cover present. ' +
+    (allZero
+      ? '<span class="mark">All edges read 0px</span> — either the page has no insets, or the override is not reaching env().'
+      : 'Non-zero insets reported.') +
+    '<br>screen ' + screen.width + 'x' + screen.height +
+    ' | visualViewport ' + (window.visualViewport
+        ? Math.round(window.visualViewport.width) + 'x' + Math.round(window.visualViewport.height)
+        : 'n/a');
+</script>
+</body>
+</html>

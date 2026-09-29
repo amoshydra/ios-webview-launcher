@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>env control</title>
+<style>
+  html,body{margin:0;padding:0;font:14px/1.4 -apple-system,system-ui,sans-serif}
+  body{padding:12px}
+  #a{position:fixed;top:0;left:0;right:0;height:60px;background:rgba(255,0,0,.3);z-index:9}
+  #b{position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(0,0,255,.3);z-index:9}
+  pre{background:#111;color:#0f0;padding:8px;font-size:12px;white-space:pre-wrap}
+  /* Deliberately FORCE a nonzero safe-area value to test whether env()
+     resolves at all in this web view, independent of device insets. */
+  #forced{position:fixed;top:0;left:0;visibility:hidden;
+    padding-top:env(safe-area-inset-top, 77px);
+    padding-bottom:env(safe-area-inset-bottom, 88px);}
+</style>
+</head>
+<body>
+<div id="a"></div><div id="b"></div>
+<h3>Control page</h3>
+<pre id="out">measuring…</pre>
+<div id="forced"></div>
+<script>
+  var f = document.getElementById('forced');
+  var fcs = getComputedStyle(f);
+  var probe = document.createElement('div');
+  probe.style.cssText='position:fixed;top:0;left:0;visibility:hidden;'+
+    'padding-top:env(safe-area-inset-top,0px);'+
+    'padding-bottom:env(safe-area-inset-bottom,0px);';
+  document.body.appendChild(probe);
+  var cs=getComputedStyle(probe);
+  document.getElementById('out').textContent =
+    'env(top,0px)   = ' + cs.paddingTop + '\n' +
+    'env(bottom,0px)= ' + cs.paddingBottom + '\n' +
+    'env(top,77px)  = ' + fcs.paddingTop + '   <- 0 means env() resolved to a real value of 0; 77px means env() was unsupported and the fallback was used\n' +
+    'env(bottom,88px)= ' + fcs.paddingBottom + '\n' +
+    'visualViewport h = ' + (window.visualViewport ? Math.round(window.visualViewport.height) : 'n/a') +
+    ' | screen h = ' + screen.height;
+</script>
+</body>
+</html>
