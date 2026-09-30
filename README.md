@@ -4,6 +4,10 @@ An iOS/SwiftUI port of [`amoshydra/android-webview-launcher`](https://github.com
 
 A fullscreen WebView launcher with JavaScript injection capabilities.
 
+| Settings | Safe area override applied |
+| --- | --- |
+| <img src="docs/settings.webp" width="260" alt="The launcher settings screen: URL, JavaScript, cache policy, edge to edge toggle, and the four per-edge inset override fields" /> | <img src="docs/override-on.webp" width="260" alt="A loaded page reporting insets of 150 40 180 40, the values entered in the override fields, with the page's own overlays drawn at the overridden positions" /> |
+
 ## Features
 
 - **Custom URL Input** — enter any http/https address to load
@@ -52,7 +56,33 @@ Fields take a point value per edge; **blank leaves that edge at the real system
 value**. Values are not clamped, so a value larger than the real inset pushes
 content further in — same as the Android original.
 
-**Verified working** on the iOS Simulator, iOS 18.6 → 27.2:
+| No override | Override `150/40/180/40` |
+| --- | --- |
+| <img src="docs/override-off.webp" width="280" alt="A loaded page with no override, reporting the real device insets of 62 0 34 0" /> | <img src="docs/override-on.webp" width="280" alt="The same page with 150/40/180/40 requested, reporting 150 40 180 40" /> |
+
+The real insets on that device are `62/0/34/0`. The page in both shots is
+[`amoshydra/demo-viewport`](https://amoshydra.github.io/demo-viewport/?fit=cover),
+which reports what it observes; the numbers are its own readout, not this app's.
+
+### On the iPhone Duo
+
+The Duo is Apple's first foldable, and its safe area is a different shape from
+every other iPhone — and it changes shape twice. No override set:
+
+| Outer, portrait | Outer, landscape | Unfolded, inner display |
+| --- | --- | --- |
+| <img src="docs/duo-outer-portrait.webp" width="230" alt="Duo folded, outer display in portrait: viewport 386 by 678, insets 0 0 34 0" /> | <img src="docs/duo-outer-landscape.webp" width="230" alt="Duo folded, outer display in landscape: viewport 678 by 386, insets 0 34 20 34" /> | <img src="docs/duo-inner-unfolded.webp" width="230" alt="Duo unfolded to the inner display: viewport 871 by 669, insets 0 34 20 34" /> |
+| `0 0 34 0` | `0 34 20 34` | `0 34 20 34` |
+
+The top is `0` in all three, where a Pro reports `62` for its notch. And the 34pt
+home indicator that sits entirely at the bottom in portrait splits into 34pt on
+each side with 20pt at the bottom once rotated or unfolded — so anything sizing
+a footer off `env(safe-area-inset-bottom)` is wrong in two of the three states.
+
+These three are frames from a screen recording rather than `simctl io screenshot`:
+rotation and folding could not be driven headlessly.
+
+**Verified working** on the iOS Simulator, iOS 18.6 → 27.1:
 
 | Runtime | Device | Overrides | Blank → real values |
 |---|---|---|---|
